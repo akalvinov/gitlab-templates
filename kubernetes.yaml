@@ -1,0 +1,35 @@
+# Core kubernetes and helm templates
+# Required variables:
+# CLUSTER_NAME - name of EKS cluster. Is used for configuring kubernetes access. Example "development".
+# ENVIRONMENT - name of environment. Namespace and values file are dependent on it. Example "development".
+# RELEASE_NAME - name of application. Is used by helm to form release name. Example "custom-ui".
+# IMAGE_TAG - tag of image to deploy
+# HELM_CD - directory of helm chart if not in root
+variables:
+  HELM_CD: "."
+
+.kubernetes_auth:
+  tags:
+    - docker
+  image: registry.gitlab.com/custom/devops/deployer:0.0.12
+  before_script:
+    - eval $(aws sts assume-role --role-arn arn:aws:iam::859864011017:role/${CLUSTER_NAME}-kubectl-access-role --role-session-name test | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
+    - aws eks update-kubeconfig --name ${CLUSTER_NAME} 
+
+.helm_deploy:
+  stage: deploy
+  script:
+    - cd ${HELM_CD}
+    - helm upgrade --wait --timeout 600s --install -n ${ENVIRONMENT} -f ./helm/values-${ENVIRONMENT}.yaml --set imageTag=${IMAGE_TAG} ${RELEASE_NAME} ./helm 
+
+.helm_plan:
+  stage: plan
+  script:
+    - cd ${HELM_CD}
+    - helm diff upgrade --install -n ${ENVIRONMENT} -f ./helm/values-${ENVIRONMENT}.yaml --set imageTag=${IMAGE_TAG} ${RELEASE_NAME} ./helm
+
+.helm_destroy:
+  stage: destroy
+  script:
+    - cd ${HELM_CD}
+    - helm uninstall -n ${ENVIRONMENT} ${RELEASE_NAME} 

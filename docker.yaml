@@ -1,0 +1,7 @@
+.docker_job:
+  image: registry.gitlab.com/custom/devops/builder:0.0.11
+  services:
+    - docker:24.0.5-dind
+  before_script:
+    - eval $(aws ecr get-login --no-include-email --region $AWS_REGION | sed 's|https://||')
+    - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${AWS_REGISTRY?}
