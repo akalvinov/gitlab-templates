@@ -8,8 +8,10 @@ Templates of gitlab pipelines.
 
 Include template to project with
 
+```
 ---
 include:
   - project: 'custom/gitlab-templates'
     ref: 0.0.1
     file: kubernetes.yaml
+```
