@@ -1,0 +1,36 @@
+FROM artifactory.our.com/project/gradle:7.4.2-jdk8 as builder
+ARG GIT_BRANCH
+ARG GIT_COMMIT
+ENV GIT_BRANCH $GIT_BRANCH
+ENV GIT_COMMIT $GIT_COMMIT
+ADD ./src ./src
+ADD ./build.gradle ./build.gradle
+ADD ./buildDocker.gradle ./buildDocker.gradle
+ADD ./buildGenerate.gradle ./buildGenerate.gradle
+ADD ./gradle ./gradle
+ADD ./gradlew ./gradlew
+RUN ./gradlew assemble
+
+FROM openjdk:8
+ENV TZ=Europe/Moscow
+# ENV JAVA_OPTS=${JAVA_OPTS}
+ENV DB_URL=${DB_URL}
+ENV POSTGRES_USER=${POSTGRES_USER}
+ENV POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+ENV DB_SCHEMAS=${DB_SCHEMAS}
+ENV APP_DB_USER=${APP_DB_USER}
+ENV APP_DB_PASSWORD=${APP_DB_PASSWORD}
+ENV spring_profiles_active=${spring_profiles_active}
+ENV absoluteSamlKeystorePath=~/some.jks
+ENV absoluteSamlXmlPath=~/idp.xml
+COPY  --from=builder /home/gradle/build/libs/core.jar ./
+COPY ./src/main/resources/saml/keystore/some.jks ~/
+COPY ./src/main/resources/saml/metadata/idp.xml ~/
+ADD ./.docker/core/docker-entrypoint.sh /
+RUN chmod u+x /docker-entrypoint.sh
+RUN /bin/sh -c set -eux;\
+    wget "https://repo1.maven.org/maven2/org/bouncycastle/bcprov-ext-jdk18on/1.71/bcprov-ext-jdk18on-1.71.jar" -O "${JAVA_HOME}"/jre/lib/ext/bcprov-ext-jdk18on-171.jar;\
+    sed -i '$a security.provider.10=org.bouncycastle.jce.provider.BouncyCastleProvider' "${JAVA_HOME}"/jre/lib/security/java.security;
+
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["run"]
