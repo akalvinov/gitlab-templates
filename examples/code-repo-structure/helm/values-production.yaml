@@ -1,0 +1,28 @@
+namespace: "production"
+
+domainName: mydomain.com
+
+replicaCount: 5
+
+resources: 
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  requests:
+    cpu: 1000m
+    memory: 2200Mi
+
+app:
+  url: "https://mydomain.com/"
+  env: prod
+  throttling_limit: 20
+  login_token_expiration_time: "600"
+  jwt_ignore_token_expiration: "false"
+  email:
+    verification_token_expiration_time: "86400"
+    admin_email: site-admin@mydomain.com
+    verification_url: "https://mydomain.com/confirm-email"
+    default_from_email: "contact@mydomain.com"
+    reporting: "content@mydomain.com"
+    service: gmail
+  

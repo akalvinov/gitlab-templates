@@ -2,6 +2,7 @@
 # Required variables:
 # CLUSTER_NAME - name of EKS cluster. Is used for configuring kubernetes access. Example "development".
 # ENVIRONMENT - name of environment. Namespace and values file are dependent on it. Example "development".
+# ENVIRONMENT sets both namespace and custom values.yaml file.
 # RELEASE_NAME - name of application. Is used by helm to form release name. Example "custom-ui".
 # IMAGE_TAG - tag of image to deploy
 # HELM_CD - directory of helm chart if not in root
@@ -13,7 +14,7 @@ variables:
     - docker
   image: registry.gitlab.com/custom/devops/deployer:0.0.12
   before_script:
-    - eval $(aws sts assume-role --role-arn arn:aws:iam::859864011017:role/${CLUSTER_NAME}-kubectl-access-role --role-session-name test | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
+    - eval $(aws sts assume-role --role-arn arn:aws:iam::11111132424324:role/${CLUSTER_NAME}-kubectl-access-role --role-session-name test | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
     - aws eks update-kubeconfig --name ${CLUSTER_NAME} 
 
 .helm_deploy:

@@ -1,0 +1,28 @@
+namespace: "rc"
+
+domainName: rc.mydomain.com
+
+replicaCount: 2
+
+resources: 
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 252Mi
+
+app:
+  url: "https://ui.rc.mydomain.com/"
+  env: rc
+  throttling_limit: 5000
+  login_token_expiration_time: "600"
+  jwt_ignore_token_expiration: "false"
+  email:
+    verification_token_expiration_time: "86400"
+    admin_email: test@mydomain.com
+    verification_url: "https://ui.rc.mydomain.com/confirm-email"
+    default_from_email: "contact@mydomain.com"
+    reporting: "content@mydomain.com"
+    service: gmail
+ 
